@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: dummy-backend
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090/realms/ne_realm
+          audiences:
+            - ente-service
+server:
+  port: 9091
