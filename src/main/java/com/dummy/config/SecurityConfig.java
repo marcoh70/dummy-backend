@@ -1,6 +1,5 @@
 package com.dummy.config;
 
-import com.dummy.JwtRoleConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

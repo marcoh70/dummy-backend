@@ -1,4 +1,4 @@
-package com.dummy;
+package com.dummy.config;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
