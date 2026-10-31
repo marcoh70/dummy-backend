@@ -6,52 +6,68 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class JwtRoleConverter
         implements Converter<Jwt, Collection<GrantedAuthority>> {
 
+
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
 
-        // 1. Identify the target service through the JWT audience
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+
+        // 1. Extract global roles (realm roles)
+        Object realmAccessClaim = jwt.getClaim("realm_access");
+
+        if (realmAccessClaim instanceof Map<?, ?> realmAccess) {
+            Object rolesClaim = realmAccess.get("roles");
+
+            if (rolesClaim instanceof Collection<?> roles) {
+                roles.stream()
+                        .filter(String.class::isInstance)
+                        .map(String.class::cast)
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .forEach(authorities::add);
+            }
+        }
+
+        // 2. Identify target service through audience
         List<String> audiences = jwt.getAudience();
 
         if (audiences == null || audiences.size() != 1) {
-            return List.of();
+            return authorities;
         }
 
         String targetService = audiences.get(0);
 
-        // 2. Read resource_access
+        // 3. Extract service-specific roles
         Object resourceAccessClaim = jwt.getClaim("resource_access");
 
         if (!(resourceAccessClaim instanceof Map<?, ?> resourceAccess)) {
-            return List.of();
+            return authorities;
         }
 
-        // 3. Find the roles belonging to the target service
         Object serviceAccess = resourceAccess.get(targetService);
 
         if (!(serviceAccess instanceof Map<?, ?> serviceAccessMap)) {
-            return List.of();
+            return authorities;
         }
 
         Object rolesClaim = serviceAccessMap.get("roles");
 
-        if (!(rolesClaim instanceof Collection<?> roles)) {
-            return List.of();
+        if (rolesClaim instanceof Collection<?> roles) {
+            roles.stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .map(SimpleGrantedAuthority::new)
+                    .forEach(authorities::add);
         }
 
-        // 4. Convert roles into Spring Security authorities
-        return roles.stream()
-                .filter(String.class::isInstance)
-                .map(String.class::cast)
-                .map(SimpleGrantedAuthority::new)
-                .map(GrantedAuthority.class::cast)
-                .toList();
+        authorities.stream()
+                .forEach(a -> System.out.println("Authority: " + a.getAuthority()));
+
+        return authorities;
     }
 }

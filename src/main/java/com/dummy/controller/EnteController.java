@@ -18,13 +18,14 @@ public class EnteController {
 
     private final CurrentUserService currentUserService;
 
-    //@GetMapping(path = "/ente")
+    @GetMapping
     public String getUserInfo(){
 
         return currentUserService.getCurrentUserInfo();
     }
 
-    @PreAuthorize("hasAnyAuthority('ENTE_WRITE', 'ENTE_READ')")
+    //@PreAuthorize("hasAnyAuthority('ENTE_WRITE', 'ENTE_READ')")
+    @PreAuthorize("hasAuthority('DEVELOPER') or hasAuthority('MANAGER')")
     @GetMapping("/user")
     public Map<String, Object> securityTest(
             Authentication authentication) {
@@ -35,7 +36,8 @@ public class EnteController {
         );
     }
 
-    @PreAuthorize("hasAuthority('ENTE_ADMIN')")
+    //@PreAuthorize("hasAuthority('ENTE_ADMIN')")
+    @PreAuthorize("hasAuthority('MANAGER')")
     @GetMapping("/admin")
     public Map<String, Object> securityAdminTest(
             Authentication authentication) {
@@ -45,4 +47,24 @@ public class EnteController {
                 "authorities", authentication.getAuthorities()
         );
     }
+
+    /**
+     * @PreAuthorize("""
+     *     (hasAuthority ( ' DEVELOPER ')
+     *     or hasAuthority('MANAGER'))
+     *     and hasAuthority('ENTE_READ')
+     *     """)
+     */
+    /**
+     * @PreAuthorize("""
+     *     hasAuthority(' MANAGER ')
+     *     and hasAuthority('ENTE_APPROVE')
+     *     """)
+     */
+    /**
+     * @PreAuthorize("""
+     *     hasAuthority(' DEVELOPER ')
+     *     and hasAuthority('ENTE_WRITE')
+     *     """)
+     */
 }
