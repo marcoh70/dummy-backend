@@ -3,6 +3,7 @@ package com.dummy.service;
 import com.dummy.config.CurrentUserConfig;
 import com.dummy.dto.UserInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -11,6 +12,7 @@ public class CurrentUserService {
 
     private final CurrentUserConfig currentUserConfig;
 
+    @PreAuthorize("hasAuthority('ENTE_READ')")
     public String getCurrentUserInfo(){
 
         return  """
@@ -20,4 +22,5 @@ public class CurrentUserService {
                 """.formatted(currentUserConfig.getUserId(), currentUserConfig.getUserAuthorities(),currentUserConfig.getClaims());
 
     }
+
 }
